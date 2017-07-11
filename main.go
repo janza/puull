@@ -53,7 +53,7 @@ maim -s | curl -s -F "f=@-" '{{.}}' | cut -f 2 -d,
 				id, _ := b.NextSequence()
 				id = id % 100
 
-				key := fmt.Sprintf("%s:%x", time.Now().Format("2006-01-02"), id)
+				key := fmt.Sprintf("%x", id)
 
 				file, _, err := r.FormFile("f")
 				if err != nil {
