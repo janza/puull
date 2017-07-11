@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"html/template"
 	"net/http"
 	"os"
 	"time"
@@ -32,6 +33,18 @@ func main() {
 
 	rootUrl := os.Getenv("ROOT_URL")
 
+	t, err := template.New("index").Parse(`#!/usr/bin/env bash
+# puull: image uploader
+#
+# Requires: curl, maim
+#
+# Installation: curl '{{.}}' | sudo tee /usr/bin/puull && chmod +x /usr/bin/puull
+#
+# Source: https://github.com/janza/puull
+set -e
+
+maim -s | curl -s -X POST '{{.}}' -F "f=@-" | cut -f 2 -d,
+`)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "POST" {
 			err := db.Update(func(tx *bolt.Tx) error {
@@ -63,6 +76,14 @@ func main() {
 				http.Error(w, err.Error(), 500)
 			}
 		} else {
+			if r.URL.Path == "/" {
+				w.Header().Set("Content-Type", "text/plain")
+				err := t.Execute(w, rootUrl)
+				if err != nil {
+					http.Error(w, err.Error(), 500)
+				}
+				return
+			}
 			err := db.View(func(tx *bolt.Tx) error {
 				b := tx.Bucket(bucketName)
 				id := []byte(r.URL.Path[1:])
