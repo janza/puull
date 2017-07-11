@@ -37,7 +37,7 @@ func main() {
 #
 # Requires: curl, maim
 #
-# Installation: curl '{{.}}' | sudo tee /usr/bin/puull && chmod +x /usr/bin/puull
+# Installation: curl '{{.}}' | sudo tee /usr/bin/puull && sudo chmod +x /usr/bin/puull
 #
 # Source: https://github.com/janza/puull
 set -e
