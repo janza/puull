@@ -40,6 +40,8 @@ func main() {
 # Installation: curl '{{.}}' | sudo tee /usr/bin/puull && sudo chmod +x /usr/bin/puull
 #
 # Source: https://github.com/janza/puull
+#
+# NO DROPBOX, NO PUUSH, ONLY PUULL
 set -e
 
 maim -s | curl -s -F "f=@-" '{{.}}' | cut -f 2 -d,
