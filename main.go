@@ -43,7 +43,7 @@ func main() {
 # Source: https://github.com/janza/puull
 set -e
 
-maim -s | curl -s -X POST '{{.}}' -F "f=@-" | cut -f 2 -d,
+maim -s | curl -s -F "f=@-" '{{.}}' | cut -f 2 -d,
 `)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "POST" {
