@@ -51,6 +51,7 @@ maim -s | curl -s -F "f=@-" '{{.}}' | cut -f 2 -d,
 			err := db.Update(func(tx *bolt.Tx) error {
 				b := tx.Bucket(bucketName)
 				id, _ := b.NextSequence()
+				id = id % 100
 
 				key := fmt.Sprintf("%s:%x", time.Now().Format("2006-01-02"), id)
 
