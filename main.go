@@ -45,6 +45,7 @@ set -e
 
 maim -s | curl -s -F "f=@-" '{{.}}' | cut -f 2 -d,
 `)
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "POST" {
 			err := db.Update(func(tx *bolt.Tx) error {
@@ -75,32 +76,33 @@ maim -s | curl -s -F "f=@-" '{{.}}' | cut -f 2 -d,
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 			}
-		} else {
-			if r.URL.Path == "/" {
-				w.Header().Set("Content-Type", "text/plain")
-				err := t.Execute(w, rootUrl)
-				if err != nil {
-					http.Error(w, err.Error(), 500)
-				}
-				return
-			}
-			err := db.View(func(tx *bolt.Tx) error {
-				b := tx.Bucket(bucketName)
-				id := []byte(r.URL.Path[1:])
-				v := b.Get(id)
-				if v != nil {
-					w.Header().Set("Content-Type", "image/png")
-					w.Write(v)
-				} else {
-					w.WriteHeader(http.StatusNotFound)
-					fmt.Fprintf(w, "Not found: %s", id)
-				}
+			return
+		}
 
-				return nil
-			})
+		if r.URL.Path == "/" {
+			w.Header().Set("Content-Type", "text/plain")
+			err := t.Execute(w, rootUrl)
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 			}
+			return
+		}
+		err := db.View(func(tx *bolt.Tx) error {
+			b := tx.Bucket(bucketName)
+			id := []byte(r.URL.Path[1:])
+			v := b.Get(id)
+			if v != nil {
+				w.Header().Set("Content-Type", "image/png")
+				w.Write(v)
+			} else {
+				w.WriteHeader(http.StatusNotFound)
+				fmt.Fprintf(w, "Not found: %s", id)
+			}
+
+			return nil
+		})
+		if err != nil {
+			http.Error(w, err.Error(), 500)
 		}
 	})
 
