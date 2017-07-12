@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/boltdb/bolt"
 )
@@ -69,7 +70,7 @@ maim -s | curl -s -F "f=@-" '{{.}}' | cut -f 2 -d,
 					return err
 				}
 
-				url := fmt.Sprintf("%s/%s", rootUrl, key)
+				url := fmt.Sprintf("%s/%s.png", rootUrl, key)
 
 				fmt.Fprintf(w, "0,%s,%x,%d", url, id, 0)
 				return nil
@@ -91,7 +92,7 @@ maim -s | curl -s -F "f=@-" '{{.}}' | cut -f 2 -d,
 		}
 		err := db.View(func(tx *bolt.Tx) error {
 			b := tx.Bucket(bucketName)
-			id := []byte(r.URL.Path[1:])
+			id := []byte(strings.Split(r.URL.Path[1:], ".")[0])
 			v := b.Get(id)
 			if v != nil {
 				w.Header().Set("Content-Type", "image/png")
