@@ -45,7 +45,7 @@ func main() {
 # NO DROPBOX, NO PUUSH, ONLY PUULL
 set -e
 
-maim -s | curl -s -F "f=@-" '{{.}}' | cut -f 2 -d,
+maim -s | curl -s -F "f=@-" '{{.}}'
 `)
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
