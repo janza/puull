@@ -46,7 +46,12 @@ func main() {
 # NO DROPBOX, NO PUUSH, ONLY PUULL
 set -e
 
-maim -s | curl -s -F "f=@-" '{{.}}'
+if [[ $(uname) == Linux ]]; then
+	maim -s | curl -s -F "f=@-" '{{.}}'
+else
+	screencapture -i /tmp/screenshot.png
+	curl -s -F "f=@/tmp/screenshot.png" '{{.}}'
+fi
 `)
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
