@@ -77,10 +77,10 @@ maim -s | curl -s -F "f=@-" '{{.}}'
 					return err
 				}
 
-				url := fmt.Sprintf("%s/%s.png", rootURL, key)
+				url := fmt.Sprintf("%s/%s.png", rootURL, fmt.Sprintf("%x", uniqueID))
 
 				if r.URL.Path == "/api/up" {
-					fmt.Fprintf(w, "0,%s,%x,%d", url, uniqueID, 0)
+					fmt.Fprintf(w, "0,%s,%x,%d", url, fmt.Sprintf("%x", uniqueID), 0)
 				} else {
 					fmt.Fprint(w, url)
 				}
