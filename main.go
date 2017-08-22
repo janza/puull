@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/boltdb/bolt"
@@ -31,7 +32,7 @@ func main() {
 		panic(err)
 	}
 
-	rootUrl := os.Getenv("ROOT_URL")
+	rootURL := os.Getenv("ROOT_URL")
 
 	t, err := template.New("index").Parse(`#!/usr/bin/env bash
 # puull: image uploader
@@ -52,8 +53,8 @@ maim -s | curl -s -F "f=@-" '{{.}}'
 		if r.Method == "POST" {
 			err := db.Update(func(tx *bolt.Tx) error {
 				b := tx.Bucket(bucketName)
-				id, _ := b.NextSequence()
-				id = id % 100
+				uniqueID, _ := b.NextSequence()
+				id := uniqueID % 100
 
 				key := fmt.Sprintf("%x", id)
 
@@ -63,17 +64,23 @@ maim -s | curl -s -F "f=@-" '{{.}}'
 				}
 
 				buf := new(bytes.Buffer)
-				buf.ReadFrom(file)
+				n, err := buf.ReadFrom(file)
+				if err != nil {
+					return err
+				}
+				if n == 0 {
+					return fmt.Errorf("empty upload")
+				}
 
 				err = b.Put([]byte(key), buf.Bytes())
 				if err != nil {
 					return err
 				}
 
-				url := fmt.Sprintf("%s/%s.png", rootUrl, key)
+				url := fmt.Sprintf("%s/%s.png", rootURL, key)
 
 				if r.URL.Path == "/api/up" {
-					fmt.Fprintf(w, "0,%s,%x,%d", url, id, 0)
+					fmt.Fprintf(w, "0,%s,%x,%d", url, uniqueID, 0)
 				} else {
 					fmt.Fprint(w, url)
 				}
@@ -88,7 +95,7 @@ maim -s | curl -s -F "f=@-" '{{.}}'
 
 		if r.URL.Path == "/" {
 			w.Header().Set("Content-Type", "text/plain")
-			err := t.Execute(w, rootUrl)
+			err := t.Execute(w, rootURL)
 			if err != nil {
 				http.Error(w, err.Error(), 500)
 			}
@@ -96,14 +103,20 @@ maim -s | curl -s -F "f=@-" '{{.}}'
 		}
 		err := db.View(func(tx *bolt.Tx) error {
 			b := tx.Bucket(bucketName)
-			id := []byte(strings.Split(r.URL.Path[1:], ".")[0])
-			v := b.Get(id)
+			idInPath := strings.Split(r.URL.Path[1:], ".")[0]
+			id, err := strconv.ParseUint(idInPath, 16, 64)
+			if err != nil {
+				return err
+			}
+			idInDb := fmt.Sprintf("%x", id%100)
+
+			v := b.Get([]byte(idInDb))
 			if v != nil {
 				w.Header().Set("Content-Type", "image/png")
 				w.Write(v)
 			} else {
 				w.WriteHeader(http.StatusNotFound)
-				fmt.Fprintf(w, "Not found: %s", id)
+				fmt.Fprintf(w, "Not found: %s", idInDb)
 			}
 
 			return nil
