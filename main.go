@@ -106,7 +106,7 @@ fi
 			}
 			return
 		}
-		err := db.View(func(tx *bolt.Tx) error {
+		err := db.Update(func(tx *bolt.Tx) error {
 			b := tx.Bucket(bucketName)
 			splitPath := strings.Split(r.URL.Path[1:], ".")
 			extension := splitPath[len(splitPath)-1]
