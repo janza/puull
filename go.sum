@@ -1,0 +1,4 @@
+github.com/boltdb/bolt v1.2.1 h1:dqty3m0dX4pwSiqpaNlLlaVw33YmC0NWCVpo4PJmxyA=
+github.com/boltdb/bolt v1.2.1/go.mod h1:clJnj/oiGkjum5o1McbSZDSLxVThjynRyGBgiAx27Ps=
+github.com/boltdb/bolt v1.3.1 h1:JQmyP4ZBrce+ZQu0dY660FMfatumYDLun9hBCUVIkF4=
+github.com/boltdb/bolt v1.3.1/go.mod h1:clJnj/oiGkjum5o1McbSZDSLxVThjynRyGBgiAx27Ps=

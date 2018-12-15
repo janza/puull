@@ -108,20 +108,39 @@ fi
 		}
 		err := db.View(func(tx *bolt.Tx) error {
 			b := tx.Bucket(bucketName)
-			idInPath := strings.Split(r.URL.Path[1:], ".")[0]
+			splitPath := strings.Split(r.URL.Path[1:], ".")
+			extension := splitPath[len(splitPath)-1]
+			idInPath := splitPath[0]
 			id, err := strconv.ParseUint(idInPath, 16, 64)
 			if err != nil {
-				return err
+				w.WriteHeader(http.StatusBadRequest)
+				fmt.Fprintf(w, "Invalid request")
+				return nil
+			}
+
+			uniqueID, _ := b.NextSequence()
+			if int(id) < int(uniqueID)-100 {
+				w.WriteHeader(http.StatusNotFound)
+				fmt.Fprintf(w, "Image expired")
+				return nil
 			}
 			idInDb := fmt.Sprintf("%x", id%100)
 
 			v := b.Get([]byte(idInDb))
 			if v != nil {
-				w.Header().Set("Content-Type", "image/png")
+				contentType := "image/png"
+				if extension == "mkv" {
+					contentType = "video/x-matroska"
+				} else if extension == "mp4" {
+					contentType = "video/mp4"
+				} else if extension == "webm" {
+					contentType = "video/webm"
+				}
+				w.Header().Set("Content-Type", contentType)
 				w.Write(v)
 			} else {
 				w.WriteHeader(http.StatusNotFound)
-				fmt.Fprintf(w, "Not found: %s", idInDb)
+				fmt.Fprintf(w, "Not found")
 			}
 
 			return nil
