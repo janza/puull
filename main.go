@@ -12,6 +12,10 @@ import (
 	"github.com/boltdb/bolt"
 )
 
+const (
+	MAX_IMAGES = 100000
+)
+
 func main() {
 	db, err := bolt.Open("puull.db", 0600, nil)
 	if err != nil {
@@ -59,7 +63,7 @@ fi
 			err := db.Update(func(tx *bolt.Tx) error {
 				b := tx.Bucket(bucketName)
 				uniqueID, _ := b.NextSequence()
-				id := uniqueID % 100000
+				id := uniqueID % MAX_IMAGES
 
 				key := fmt.Sprintf("%x", id)
 
@@ -119,12 +123,12 @@ fi
 			}
 
 			uniqueID, _ := b.NextSequence()
-			if int(id) < int(uniqueID)-100 {
+			if int(id) < int(uniqueID)-MAX_IMAGES {
 				w.WriteHeader(http.StatusNotFound)
 				fmt.Fprintf(w, "Image expired")
 				return nil
 			}
-			idInDb := fmt.Sprintf("%x", id%100)
+			idInDb := fmt.Sprintf("%x", id%MAX_IMAGES)
 
 			v := b.Get([]byte(idInDb))
 			if v != nil {
