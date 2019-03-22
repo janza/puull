@@ -59,7 +59,7 @@ fi
 			err := db.Update(func(tx *bolt.Tx) error {
 				b := tx.Bucket(bucketName)
 				uniqueID, _ := b.NextSequence()
-				id := uniqueID % 100
+				id := uniqueID % 100000
 
 				key := fmt.Sprintf("%x", id)
 
